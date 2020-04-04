@@ -5,7 +5,8 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 
 const userRoutes = require("./api/routes/users");
-const triptRoutes = require("./api/routes/trips");
+const tripBookingRoutes = require("./api/routes/trip-bookings");
+const tripRequestRoutes = require("./api/routes/trip-requests");
 
 mongoose.connect(
   `mongodb+srv://normaluser:${process.env.MONGO_ATLAS_PW}@traffic-allocation-db-krlbf.mongodb.net/test?retryWrites=true&w=majority`,
@@ -35,7 +36,8 @@ app.use((req, res, next) => {
 });
 
 app.use("/users", userRoutes);
-app.use("/trips", triptRoutes);
+app.use("/tripbookings", tripBookingRoutes);
+app.use("/triprequests", tripRequestRoutes);
 
 app.use((req, res, next) => {
   const error = new Error("Not found");

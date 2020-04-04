@@ -2,14 +2,18 @@ const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
 
-const Trip = require("../models/trip");
+const TripRequest = require("../models/trip-request");
 const User = require("../models/user");
 
 router.get("/", (req, res, next) => {
-  Trip.find()
+  const user = req.query.user;
+  console.log(user);
+  const query = user !== undefined ? { user: user } : {};
+  console.log(query);
+  TripRequest.find(query)
     .exec()
-    .then((docs) => {
-      res.status(200).json(docs);
+    .then((tripRequests) => {
+      res.status(200).json(tripRequests);
     })
     .catch((err) => {
       res.status(500).json({
@@ -21,16 +25,17 @@ router.get("/", (req, res, next) => {
 router.post("/", (req, res, next) => {
   User.findById(req.body.user)
     .exec()
-    .then((doc) => {
-      if (!doc) {
+    .then((user) => {
+      if (!user) {
         return res.status(404).json({
           error: "User not found",
         });
       }
-      const post = new Trip({
+      const post = new TripRequest({
         _id: mongoose.Types.ObjectId(),
-        user: req.body.user,
-        time: new Date(req.body.time),
+        user: user._id,
+        timeSpanStart: new Date(req.body.timeSpanStart),
+        timeSpanEnd: new Date(req.body.timeSpanEnd),
         startPosition: req.body.startPosition,
         endPosition: req.body.endPosition,
       });
@@ -46,33 +51,35 @@ router.post("/", (req, res, next) => {
     });
 });
 
-router.get("/:tripId", (req, res, next) => {
-  Trip.findById(req.params.postId)
+router.get("/:tripRequestId", (req, res, next) => {
+  TripRequest.findById(req.params.tripRequestId)
     .exec()
-    .then((doc) => {
-      if (doc) {
-        return res.status(200).json(doc);
+    .then((tripRequest) => {
+      if (tripRequest) {
+        return res.status(200).json(tripRequest);
       } else {
         return res.status(404).json({
-          error: "Trip not found",
+          error: "Trip request not found",
         });
       }
+    })
+    .catch((err) => {
+      res.status(500).json({ error: err });
     });
 });
 
-router.delete("/:tripId", (req, res, next) => {
-  const id = req.params.postId;
-  Trip.remove({ _id: id })
+router.delete("/:tripRequestId", (req, res, next) => {
+  const id = req.params.tripRequestId;
+  TripRequest.remove({ _id: id })
     .exec()
     .then((result) => {
       if (result) {
         res.status(200).json(result);
       } else {
-        res.status(404).json({ error: "No trip was found" });
+        res.status(404).json({ error: "Trip request not found" });
       }
     })
     .catch((err) => {
-      console.log(err);
       res.status(500).json({ error: err });
     });
 });
